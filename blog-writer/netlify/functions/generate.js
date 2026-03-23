@@ -46,13 +46,27 @@ ${customStyle ? `\n[추가 말투]\n${customStyle}` : ""}`;
 
     userPrompt += `\n\n글 마지막에 해시태그 붙여줘.`;
 
-    const message = await client.messages.create({
-      model: "claude-sonnet-4-20250514",
-      max_tokens: 2000,
-      system: systemPrompt,
-      messages: [{ role: "user", content: userPrompt }],
-      tools: [{ type: "web_search_20250305", name: "web_search" }],
-    });
+    // 웹검색이 필요한 경우(음식점)와 아닌 경우 분리
+    let message;
+    if (restaurantName) {
+      // 웹검색 포함
+      message = await client.beta.messages.create({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 2000,
+        system: systemPrompt,
+        messages: [{ role: "user", content: userPrompt }],
+        tools: [{ type: "web_search_20250305", name: "web_search" }],
+        betas: ["web-search-2025-03-05"],
+      });
+    } else {
+      // 웹검색 없이
+      message = await client.messages.create({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 2000,
+        system: systemPrompt,
+        messages: [{ role: "user", content: userPrompt }],
+      });
+    }
 
     const text = message.content.filter(b => b.type === "text").map(b => b.text).join("");
 
