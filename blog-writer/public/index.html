@@ -16,7 +16,7 @@
   --txt:#18181b;--txt2:#71717a;--txt3:#a1a1aa;
   --border:#e4e4e7;--border2:#d4d4d8;
   --accent:#18181b;--accent-txt:#fff;
-  --green:#03C75A;
+  --green:#03C75A;--blue:#3b82f6;--red:#ef4444;
   --radius:12px;--radius-sm:8px;
   --safe-top:env(safe-area-inset-top);
   --safe-bottom:env(safe-area-inset-bottom);
@@ -29,7 +29,7 @@
 }}
 html,body{height:100%;background:var(--bg);color:var(--txt);font-family:-apple-system,'Pretendard','Noto Sans KR',sans-serif;overscroll-behavior:none;}
 .app{display:flex;flex-direction:column;height:100%;max-width:480px;margin:0 auto;}
-.tabbar{display:flex;border-bottom:1px solid var(--border);background:var(--bg);padding-top:calc(var(--safe-top) + 8px);flex-shrink:0;}
+.tabbar{display:flex;border-bottom:1px solid var(--border);background:var(--bg);padding-top:calc(var(--safe-top)+8px);flex-shrink:0;}
 .tab{flex:1;padding:12px 0 10px;font-size:13px;font-weight:500;color:var(--txt2);text-align:center;cursor:pointer;border-bottom:2px solid transparent;}
 .tab.active{color:var(--txt);border-color:var(--txt);}
 .page{display:none;flex:1;overflow-y:auto;padding:16px;padding-bottom:calc(16px + var(--safe-bottom));}
@@ -52,9 +52,30 @@ textarea{min-height:80px;line-height:1.6;}
 .rest-box{background:var(--bg2);border-radius:var(--radius-sm);padding:12px;display:none;flex-direction:column;gap:8px;}
 .rest-box.show{display:flex;}
 .hint{font-size:11px;color:var(--txt3);margin-top:2px;}
+/* 모드 토글 */
+.mode-toggle{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--border2);border-radius:var(--radius-sm);overflow:hidden;}
+.mode-btn{padding:11px;font-size:14px;font-weight:500;text-align:center;cursor:pointer;background:var(--bg);color:var(--txt2);border:none;font-family:inherit;}
+.mode-btn.active{background:var(--accent);color:var(--accent-txt);}
+.mode-btn:first-child{border-right:1px solid var(--border2);}
+/* 유튜브 트렌드 */
+.trend-box{background:var(--bg2);border-radius:var(--radius-sm);padding:12px;display:flex;flex-direction:column;gap:8px;}
+.trend-header{display:flex;align-items:center;justify-content:space-between;}
+.trend-title{font-size:13px;font-weight:600;}
+.btn-refresh{padding:6px 12px;font-size:12px;border:1px solid var(--border2);border-radius:var(--radius-sm);background:var(--bg);color:var(--txt);cursor:pointer;font-family:inherit;}
+.trend-list{display:flex;flex-direction:column;gap:6px;}
+.trend-item{padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);cursor:pointer;display:flex;align-items:flex-start;gap:10px;}
+.trend-item.sel{border-color:var(--accent);background:var(--bg2);}
+.trend-rank{font-size:13px;font-weight:700;color:var(--txt3);min-width:18px;}
+.trend-item.sel .trend-rank{color:var(--accent);}
+.trend-info .trend-name{font-size:13px;font-weight:500;line-height:1.4;}
+.trend-info .trend-ch{font-size:11px;color:var(--txt2);margin-top:2px;}
+.trend-loading{font-size:13px;color:var(--txt2);text-align:center;padding:12px;}
+.trend-hint{font-size:11px;color:var(--txt3);}
+/* 버튼 */
 .btn-gen{width:100%;padding:15px;font-size:16px;font-weight:600;border:none;border-radius:var(--radius);background:var(--accent);color:var(--accent-txt);cursor:pointer;}
 .btn-gen:disabled{opacity:.4;cursor:not-allowed;}
 .btn-gen:active:not(:disabled){opacity:.75;}
+/* 결과 */
 .result-empty{text-align:center;padding:3rem 0;color:var(--txt2);font-size:14px;line-height:1.8;}
 .result-box{display:none;flex-direction:column;gap:12px;}
 .result-box.show{display:flex;}
@@ -64,10 +85,12 @@ textarea{min-height:80px;line-height:1.6;}
 .btn-act:active{background:var(--bg2);}
 .btn-naver{background:var(--green);color:#fff;border-color:var(--green);grid-column:1/-1;}
 .naver-tip{background:var(--bg2);border-radius:var(--radius-sm);padding:12px 14px;font-size:13px;color:var(--txt2);line-height:1.7;border-left:3px solid var(--green);}
+/* 상태바 */
 .statusbar{padding:8px 16px;background:var(--bg);border-top:1px solid var(--border);font-size:12px;color:var(--txt2);display:flex;align-items:center;gap:6px;flex-shrink:0;padding-bottom:calc(8px + var(--safe-bottom));}
 .dot{width:6px;height:6px;border-radius:50%;background:var(--border2);flex-shrink:0;}
 .dot.on{background:#22c55e;animation:pulse 1.5s infinite;}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+/* 설정 */
 .settings-card{background:var(--bg2);border-radius:var(--radius-sm);padding:14px;display:flex;flex-direction:column;gap:8px;}
 .settings-title{font-size:14px;font-weight:600;}
 .settings-hint{font-size:12px;color:var(--txt2);line-height:1.6;}
@@ -86,31 +109,65 @@ textarea{min-height:80px;line-height:1.6;}
 
   <!-- 글쓰기 -->
   <div class="page active" id="tab-write">
-    <div class="field">
-      <div class="lbl">블로그 제목</div>
-      <input type="text" id="title" placeholder="제목 (비워두면 AI가 정함)"/>
-    </div>
 
     <div class="field">
-      <div class="lbl">글 유형</div>
-      <div class="type-grid">
-        <div class="type-card active" data-type="일상/후기" onclick="selType(this)"><div class="ic">✏️</div><div class="nm">일상/후기</div></div>
-        <div class="type-card" data-type="음식점 리뷰" onclick="selType(this)"><div class="ic">🍽️</div><div class="nm">음식점 리뷰</div></div>
-        <div class="type-card" data-type="여행/장소" onclick="selType(this)"><div class="ic">📍</div><div class="nm">여행/장소</div></div>
-        <div class="type-card" data-type="정보/꿀팁" onclick="selType(this)"><div class="ic">💡</div><div class="nm">정보/꿀팁</div></div>
-        <div class="type-card" data-type="제품 리뷰" onclick="selType(this)"><div class="ic">📦</div><div class="nm">제품 리뷰</div></div>
-        <div class="type-card" data-type="자유" onclick="selType(this)"><div class="ic">🌀</div><div class="nm">자유</div></div>
+      <div class="lbl">글쓰기 모드</div>
+      <div class="mode-toggle">
+        <button class="mode-btn active" id="btnManual" onclick="setMode('manual')">✏️ 직접 입력</button>
+        <button class="mode-btn" id="btnAuto" onclick="setMode('auto')">🔥 유튜브 트렌드</button>
       </div>
     </div>
 
-    <!-- 음식점 리뷰 전용 -->
-    <div class="rest-box" id="restBox">
-      <div class="lbl">음식점 정보</div>
-      <input type="text" id="restName" placeholder="음식점 이름 (예: 사천축산식육식당)"/>
-      <input type="text" id="restAddr" placeholder="위치 (예: 울산 동구)" style="margin-top:4px;"/>
-      <div class="hint">💡 AI가 웹 검색으로 메뉴·가격·특징 자동으로 찾아줌</div>
+    <!-- 자동 모드: 유튜브 급상승 -->
+    <div id="autoSection" style="display:none;">
+      <div class="trend-box">
+        <div class="trend-header">
+          <div class="trend-title">🇰🇷 유튜브 급상승 Top5</div>
+          <button class="btn-refresh" onclick="loadTrending()">🔄 새로고침</button>
+        </div>
+        <div class="trend-hint">주제를 선택하면 AI가 해당 주제로 글을 작성해요</div>
+        <div class="trend-list" id="trendList">
+          <div class="trend-loading">불러오는 중...</div>
+        </div>
+      </div>
     </div>
 
+    <!-- 수동 모드 -->
+    <div id="manualSection">
+      <div style="display:flex;flex-direction:column;gap:14px;">
+        <div class="field">
+          <div class="lbl">블로그 제목</div>
+          <input type="text" id="title" placeholder="제목 (비워두면 AI가 정함)"/>
+        </div>
+        <div class="field">
+          <div class="lbl">글 유형</div>
+          <div class="type-grid">
+            <div class="type-card active" data-type="일상/후기" onclick="selType(this)"><div class="ic">✏️</div><div class="nm">일상/후기</div></div>
+            <div class="type-card" data-type="음식점 리뷰" onclick="selType(this)"><div class="ic">🍽️</div><div class="nm">음식점 리뷰</div></div>
+            <div class="type-card" data-type="여행/장소" onclick="selType(this)"><div class="ic">📍</div><div class="nm">여행/장소</div></div>
+            <div class="type-card" data-type="정보/꿀팁" onclick="selType(this)"><div class="ic">💡</div><div class="nm">정보/꿀팁</div></div>
+            <div class="type-card" data-type="제품 리뷰" onclick="selType(this)"><div class="ic">📦</div><div class="nm">제품 리뷰</div></div>
+            <div class="type-card" data-type="자유" onclick="selType(this)"><div class="ic">🌀</div><div class="nm">자유</div></div>
+          </div>
+        </div>
+        <div class="rest-box" id="restBox">
+          <div class="lbl">음식점 정보</div>
+          <input type="text" id="restName" placeholder="음식점 이름"/>
+          <input type="text" id="restAddr" placeholder="위치 (예: 울산 동구)" style="margin-top:4px;"/>
+          <div class="hint">💡 AI가 웹 검색으로 메뉴·가격·특징 자동 수집</div>
+        </div>
+        <div class="field">
+          <div class="lbl">핵심 내용</div>
+          <textarea id="purpose" placeholder="경험, 느낌, 키워드 자유롭게&#10;예) 소고기 존맛, 분위기 좋음, 주차 편함"></textarea>
+        </div>
+        <div class="field">
+          <div class="lbl">사진 설명 (선택)</div>
+          <textarea id="photoDesc" placeholder="사진 설명&#10;예) 소고기 구이 사진, 식당 내부 분위기" style="min-height:60px;"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- 공통 -->
     <div class="row2">
       <div class="field">
         <div class="lbl">분위기</div>
@@ -125,17 +182,6 @@ textarea{min-height:80px;line-height:1.6;}
           <option>짧게</option><option selected>보통</option><option>길게</option>
         </select>
       </div>
-    </div>
-
-    <div class="field">
-      <div class="lbl">핵심 내용</div>
-      <textarea id="purpose" placeholder="경험, 느낌, 키워드 자유롭게&#10;예) 소고기 존맛, 분위기 좋음, 주차 편함"></textarea>
-    </div>
-
-    <div class="field">
-      <div class="lbl">사진 설명 (선택)</div>
-      <textarea id="photoDesc" placeholder="사진에 대한 설명을 적어주세요&#10;예) 소고기 구이 사진, 식당 내부 분위기, 음식 비주얼 좋음" style="min-height:60px;"></textarea>
-      <div class="hint">📷 사진 설명을 입력하면 글에 자연스럽게 반영됩니다</div>
     </div>
 
     <div class="field">
@@ -206,8 +252,11 @@ textarea{min-height:80px;line-height:1.6;}
 
 <script>
 let curType = '일상/후기';
+let curMode = 'manual';
 let resultText = '';
 let lastParams = null;
+let trendingVideos = [];
+let selectedTrend = null;
 
 window.addEventListener('DOMContentLoaded', () => {
   const s = localStorage.getItem('customStyle');
@@ -222,6 +271,49 @@ function showTab(name) {
   document.getElementById('tab-'+name).classList.add('active');
 }
 
+function setMode(mode) {
+  curMode = mode;
+  document.getElementById('btnManual').classList.toggle('active', mode==='manual');
+  document.getElementById('btnAuto').classList.toggle('active', mode==='auto');
+  document.getElementById('manualSection').style.display = mode==='manual' ? 'block' : 'none';
+  document.getElementById('autoSection').style.display = mode==='auto' ? 'block' : 'none';
+  document.getElementById('genBtn').textContent = mode==='auto' ? '🔥 트렌드 글 생성' : '✦ 블로그 글 생성';
+  if (mode === 'auto' && trendingVideos.length === 0) loadTrending();
+}
+
+async function loadTrending() {
+  const list = document.getElementById('trendList');
+  list.innerHTML = '<div class="trend-loading">🔄 유튜브 급상승 불러오는 중...</div>';
+  selectedTrend = null;
+  try {
+    const res = await fetch('/api/trending');
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+    trendingVideos = data.videos;
+    renderTrending();
+  } catch(e) {
+    list.innerHTML = `<div class="trend-loading" style="color:var(--red);">불러오기 실패: ${e.message}</div>`;
+  }
+}
+
+function renderTrending() {
+  const list = document.getElementById('trendList');
+  list.innerHTML = trendingVideos.map((v, i) => `
+    <div class="trend-item" id="tr${i}" onclick="pickTrend(${i})">
+      <div class="trend-rank">${i+1}</div>
+      <div class="trend-info">
+        <div class="trend-name">${v.title}</div>
+        <div class="trend-ch">${v.channel}</div>
+      </div>
+    </div>`).join('');
+}
+
+function pickTrend(i) {
+  document.querySelectorAll('.trend-item').forEach(el => el.classList.remove('sel'));
+  document.getElementById('tr'+i).classList.add('sel');
+  selectedTrend = trendingVideos[i];
+}
+
 function selType(el) {
   document.querySelectorAll('.type-card').forEach(c => c.classList.remove('active'));
   el.classList.add('active');
@@ -230,33 +322,48 @@ function selType(el) {
 }
 
 async function generate() {
-  const title = document.getElementById('title').value.trim();
   const mood = document.getElementById('mood').value;
   const length = document.getElementById('length').value;
-  const purpose = document.getElementById('purpose').value.trim();
   const tags = [...document.querySelectorAll('.chip.active')].map(t=>t.textContent).join(' ');
   const customStyle = localStorage.getItem('customStyle') || '';
-  const restaurantName = document.getElementById('restName').value.trim();
-  const restaurantAddr = document.getElementById('restAddr').value.trim();
-  const photoDesc = document.getElementById('photoDesc').value.trim();
 
-  if (!title && !purpose) { alert('제목 또는 핵심 내용을 입력해주세요'); return; }
+  let params = { mood, length, tags, customStyle, trendMode: curMode };
 
-  lastParams = { title, type: curType, mood, length, purpose, tags, customStyle, restaurantName, restaurantAddr, photoDesc };
+  if (curMode === 'auto') {
+    if (!selectedTrend && trendingVideos.length > 0) {
+      // 선택 안 했으면 1위 자동 선택
+      selectedTrend = trendingVideos[0];
+      document.getElementById('tr0')?.classList.add('sel');
+    }
+    if (!selectedTrend) { alert('유튜브 트렌드를 먼저 불러와주세요'); return; }
+    params.trendingVideos = trendingVideos;
+    params.purpose = document.getElementById('purpose')?.value?.trim() || '';
+  } else {
+    const title = document.getElementById('title').value.trim();
+    const purpose = document.getElementById('purpose').value.trim();
+    if (!title && !purpose) { alert('제목 또는 핵심 내용을 입력해주세요'); return; }
+    params = {
+      ...params, title, type: curType, purpose,
+      restaurantName: document.getElementById('restName').value.trim(),
+      restaurantAddr: document.getElementById('restAddr').value.trim(),
+      photoDesc: document.getElementById('photoDesc').value.trim(),
+    };
+  }
 
+  lastParams = params;
   const btn = document.getElementById('genBtn');
-  btn.disabled = true; btn.textContent = '✦ 생성 중...';
-  setStatus('AI가 글 작성 중... (웹 검색 포함 30초 내외)', true);
+  btn.disabled = true;
+  btn.textContent = curMode==='auto' ? '🔥 생성 중...' : '✦ 생성 중...';
+  setStatus(curMode==='auto' ? '트렌드 분석 → 웹검색 → 글 작성 중... (1분 내외)' : 'AI가 글 작성 중... (30초 내외)', true);
 
   try {
     const res = await fetch('/api/generate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(lastParams),
+      body: JSON.stringify(params),
     });
     const data = await res.json();
     if (data.error) throw new Error(data.error);
-
     resultText = data.text;
     document.getElementById('resultText').textContent = resultText;
     document.getElementById('resultBox').classList.add('show');
@@ -267,7 +374,8 @@ async function generate() {
     alert('생성 실패: ' + e.message);
     setStatus('오류 발생');
   } finally {
-    btn.disabled = false; btn.textContent = '✦ 블로그 글 생성';
+    btn.disabled = false;
+    btn.textContent = curMode==='auto' ? '🔥 트렌드 글 생성' : '✦ 블로그 글 생성';
     document.getElementById('dot').classList.remove('on');
   }
 }
