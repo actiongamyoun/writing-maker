@@ -13,11 +13,21 @@ function httpsGet(url) {
 exports.handler = async (event) => {
   const headers = {
     "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Headers": "Content-Type",
     "Content-Type": "application/json",
   };
 
+  if (event.httpMethod === "OPTIONS") return { statusCode: 200, headers, body: "" };
+
+  // GET, POST 둘 다 허용
+  if (event.httpMethod !== "GET" && event.httpMethod !== "POST") {
+    return { statusCode: 405, headers, body: JSON.stringify({ error: "Method Not Allowed" }) };
+  }
+
   try {
     const apiKey = process.env.YOUTUBE_API_KEY;
+    if (!apiKey) throw new Error("YOUTUBE_API_KEY 환경변수가 없음");
+
     const url = `https://www.googleapis.com/youtube/v3/videos?part=snippet&chart=mostPopular&regionCode=KR&maxResults=5&key=${apiKey}`;
     const raw = await httpsGet(url);
     const data = JSON.parse(raw);
