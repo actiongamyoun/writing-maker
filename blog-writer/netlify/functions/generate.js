@@ -70,13 +70,12 @@ ${purpose ? `추가 요청: ${purpose}` : ""}
       userPrompt += `\n\n글 마지막에 해시태그 붙여줘.`;
     }
 
-    const message = await client.beta.messages.create({
+    const message = await client.messages.create({
       model: "claude-sonnet-4-20250514",
       max_tokens: 2000,
       system: systemPrompt,
       messages: [{ role: "user", content: userPrompt }],
       tools: [{ type: "web_search_20250305", name: "web_search" }],
-      betas: ["web-search-2025-03-05"],
     });
 
     const text = message.content.filter(b => b.type === "text").map(b => b.text).join("");
