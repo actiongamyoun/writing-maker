@@ -102,8 +102,7 @@ ${restaurantName ? `음식점: ${restaurantName} / 위치: ${restaurantAddr || "
       max_tokens: 3000,
       system: systemPrompt,
       messages: [{ role: "user", content: userContent }],
-      tools: [{ type: "web_search_20250305", name: "web_search" }],
-    });
+         });
 
     const text = message.content.filter(b => b.type === "text").map(b => b.text).join("");
     return { statusCode: 200, headers, body: JSON.stringify({ text }) };
