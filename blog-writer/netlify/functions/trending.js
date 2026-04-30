@@ -18,8 +18,6 @@ exports.handler = async (event) => {
   };
 
   if (event.httpMethod === "OPTIONS") return { statusCode: 200, headers, body: "" };
-
-  // GET, POST 둘 다 허용
   if (event.httpMethod !== "GET" && event.httpMethod !== "POST") {
     return { statusCode: 405, headers, body: JSON.stringify({ error: "Method Not Allowed" }) };
   }
