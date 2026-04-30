@@ -71,6 +71,13 @@ textarea{min-height:80px;line-height:1.6;}
 .trend-info .trend-ch{font-size:11px;color:var(--txt2);margin-top:2px;}
 .trend-loading{font-size:13px;color:var(--txt2);text-align:center;padding:12px;}
 .trend-hint{font-size:11px;color:var(--txt3);}
+/* 사진 업로드 */
+.photo-drop{border:1.5px dashed var(--border2);border-radius:var(--radius-sm);padding:18px;text-align:center;cursor:pointer;background:var(--bg2);}
+.photo-drop p{font-size:13px;color:var(--txt2);margin-top:4px;}
+.photo-preview{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}
+.photo-thumb{position:relative;width:68px;height:68px;border-radius:var(--radius-sm);overflow:hidden;border:1px solid var(--border);}
+.photo-thumb img{width:100%;height:100%;object-fit:cover;}
+.photo-thumb .rm{position:absolute;top:2px;right:2px;width:18px;height:18px;border-radius:50%;background:rgba(0,0,0,.6);color:#fff;font-size:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;border:none;}
 /* 버튼 */
 .btn-gen{width:100%;padding:15px;font-size:16px;font-weight:600;border:none;border-radius:var(--radius);background:var(--accent);color:var(--accent-txt);cursor:pointer;}
 .btn-gen:disabled{opacity:.4;cursor:not-allowed;}
@@ -118,14 +125,14 @@ textarea{min-height:80px;line-height:1.6;}
       </div>
     </div>
 
-    <!-- 자동 모드: 유튜브 급상승 -->
+    <!-- 자동 모드 -->
     <div id="autoSection" style="display:none;">
       <div class="trend-box">
         <div class="trend-header">
           <div class="trend-title">🇰🇷 유튜브 급상승 Top5</div>
           <button class="btn-refresh" onclick="loadTrending()">🔄 새로고침</button>
         </div>
-        <div class="trend-hint">주제를 선택하면 AI가 해당 주제로 글을 작성해요</div>
+        <div class="trend-hint">주제 선택 → AI가 네이버 상위글 분석 후 SEO 최적화 글 작성</div>
         <div class="trend-list" id="trendList">
           <div class="trend-loading">불러오는 중...</div>
         </div>
@@ -136,8 +143,9 @@ textarea{min-height:80px;line-height:1.6;}
     <div id="manualSection">
       <div style="display:flex;flex-direction:column;gap:14px;">
         <div class="field">
-          <div class="lbl">블로그 제목</div>
-          <input type="text" id="title" placeholder="제목 (비워두면 AI가 정함)"/>
+          <div class="lbl">블로그 제목 / 핵심 키워드</div>
+          <input type="text" id="title" placeholder="예: 울산 동구 소고기 맛집, 호카 러닝화 후기"/>
+          <div class="hint">💡 키워드를 정확히 입력할수록 SEO 효과가 높아져요</div>
         </div>
         <div class="field">
           <div class="lbl">글 유형</div>
@@ -160,10 +168,6 @@ textarea{min-height:80px;line-height:1.6;}
           <div class="lbl">핵심 내용</div>
           <textarea id="purpose" placeholder="경험, 느낌, 키워드 자유롭게&#10;예) 소고기 존맛, 분위기 좋음, 주차 편함"></textarea>
         </div>
-        <div class="field">
-          <div class="lbl">사진 설명 (선택)</div>
-          <textarea id="photoDesc" placeholder="사진 설명&#10;예) 소고기 구이 사진, 식당 내부 분위기" style="min-height:60px;"></textarea>
-        </div>
       </div>
     </div>
 
@@ -185,6 +189,17 @@ textarea{min-height:80px;line-height:1.6;}
     </div>
 
     <div class="field">
+      <div class="lbl">사진 첨부 (선택)</div>
+      <div class="photo-drop" onclick="document.getElementById('photoIn').click()">
+        <div style="font-size:22px;">📷</div>
+        <p>탭하여 사진 추가 (여러장 가능)</p>
+        <p style="font-size:11px;margin-top:2px;">AI가 사진을 직접 분석해 감정·분위기를 글에 반영해요</p>
+      </div>
+      <input type="file" id="photoIn" accept="image/*" multiple style="display:none;" onchange="addPhotos(event)"/>
+      <div class="photo-preview" id="photoPreview"></div>
+    </div>
+
+    <div class="field">
       <div class="lbl">해시태그</div>
       <div class="chip-grid" id="tagGroup">
         <div class="chip active" onclick="this.classList.toggle('active')">#맛집</div>
@@ -203,7 +218,7 @@ textarea{min-height:80px;line-height:1.6;}
       </div>
     </div>
 
-    <button class="btn-gen" id="genBtn" onclick="generate()">✦ 블로그 글 생성</button>
+    <button class="btn-gen" id="genBtn" onclick="generate()">✦ SEO 블로그 글 생성</button>
   </div>
 
   <!-- 결과 -->
@@ -257,6 +272,7 @@ let resultText = '';
 let lastParams = null;
 let trendingVideos = [];
 let selectedTrend = null;
+let photos = []; // {data: base64, type: mimetype}
 
 window.addEventListener('DOMContentLoaded', () => {
   const s = localStorage.getItem('customStyle');
@@ -277,7 +293,7 @@ function setMode(mode) {
   document.getElementById('btnAuto').classList.toggle('active', mode==='auto');
   document.getElementById('manualSection').style.display = mode==='manual' ? 'block' : 'none';
   document.getElementById('autoSection').style.display = mode==='auto' ? 'block' : 'none';
-  document.getElementById('genBtn').textContent = mode==='auto' ? '🔥 트렌드 글 생성' : '✦ 블로그 글 생성';
+  document.getElementById('genBtn').textContent = mode==='auto' ? '🔥 트렌드 SEO 글 생성' : '✦ SEO 블로그 글 생성';
   if (mode === 'auto' && trendingVideos.length === 0) loadTrending();
 }
 
@@ -297,8 +313,7 @@ async function loadTrending() {
 }
 
 function renderTrending() {
-  const list = document.getElementById('trendList');
-  list.innerHTML = trendingVideos.map((v, i) => `
+  document.getElementById('trendList').innerHTML = trendingVideos.map((v, i) => `
     <div class="trend-item" id="tr${i}" onclick="pickTrend(${i})">
       <div class="trend-rank">${i+1}</div>
       <div class="trend-info">
@@ -321,6 +336,41 @@ function selType(el) {
   document.getElementById('restBox').classList.toggle('show', curType==='음식점 리뷰');
 }
 
+// 사진 추가 - base64로 변환
+function addPhotos(e) {
+  Array.from(e.target.files).forEach(f => {
+    // 이미지 리사이즈 (너무 크면 API 부담)
+    const reader = new FileReader();
+    reader.onload = ev => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const MAX = 1024;
+        let w = img.width, h = img.height;
+        if (w > MAX || h > MAX) {
+          if (w > h) { h = h * MAX / w; w = MAX; }
+          else { w = w * MAX / h; h = MAX; }
+        }
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        const base64 = canvas.toDataURL('image/jpeg', 0.8).split(',')[1];
+        photos.push({ data: base64, type: 'image/jpeg', preview: canvas.toDataURL('image/jpeg', 0.5) });
+        renderThumbs();
+      };
+      img.src = ev.target.result;
+    };
+    reader.readAsDataURL(f);
+  });
+}
+
+function renderThumbs() {
+  document.getElementById('photoPreview').innerHTML = photos.map((p, i) => `
+    <div class="photo-thumb">
+      <img src="${p.preview}"/>
+      <button class="rm" onclick="photos.splice(${i},1);renderThumbs()">✕</button>
+    </div>`).join('');
+}
+
 async function generate() {
   const mood = document.getElementById('mood').value;
   const length = document.getElementById('length').value;
@@ -329,32 +379,35 @@ async function generate() {
 
   let params = { mood, length, tags, customStyle, trendMode: curMode };
 
+  // 사진 포함
+  if (photos.length > 0) {
+    params.photos = photos.map(p => ({ data: p.data, type: p.type }));
+  }
+
   if (curMode === 'auto') {
     if (!selectedTrend && trendingVideos.length > 0) {
-      // 선택 안 했으면 1위 자동 선택
       selectedTrend = trendingVideos[0];
       document.getElementById('tr0')?.classList.add('sel');
     }
     if (!selectedTrend) { alert('유튜브 트렌드를 먼저 불러와주세요'); return; }
     params.trendingVideos = trendingVideos;
-    params.purpose = document.getElementById('purpose')?.value?.trim() || '';
+    params.purpose = '';
   } else {
     const title = document.getElementById('title').value.trim();
     const purpose = document.getElementById('purpose').value.trim();
-    if (!title && !purpose) { alert('제목 또는 핵심 내용을 입력해주세요'); return; }
+    if (!title && !purpose) { alert('제목 또는 핵심 키워드를 입력해주세요'); return; }
     params = {
       ...params, title, type: curType, purpose,
       restaurantName: document.getElementById('restName').value.trim(),
       restaurantAddr: document.getElementById('restAddr').value.trim(),
-      photoDesc: document.getElementById('photoDesc').value.trim(),
     };
   }
 
   lastParams = params;
   const btn = document.getElementById('genBtn');
   btn.disabled = true;
-  btn.textContent = curMode==='auto' ? '🔥 생성 중...' : '✦ 생성 중...';
-  setStatus(curMode==='auto' ? '트렌드 분석 → 웹검색 → 글 작성 중... (1분 내외)' : 'AI가 글 작성 중... (30초 내외)', true);
+  btn.textContent = '분석 중...';
+  setStatus('네이버 상위글 분석 → 정보 수집 → SEO 글 작성 중... (1~2분)', true);
 
   try {
     const res = await fetch('/api/generate', {
@@ -375,7 +428,7 @@ async function generate() {
     setStatus('오류 발생');
   } finally {
     btn.disabled = false;
-    btn.textContent = curMode==='auto' ? '🔥 트렌드 글 생성' : '✦ 블로그 글 생성';
+    btn.textContent = curMode==='auto' ? '🔥 트렌드 SEO 글 생성' : '✦ SEO 블로그 글 생성';
     document.getElementById('dot').classList.remove('on');
   }
 }

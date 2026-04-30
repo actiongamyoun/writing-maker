@@ -1,7 +1,7 @@
 {
   "name": "블로그 작가",
   "short_name": "블로그",
-  "description": "AI 블로그 글 자동 생성기",
+  "description": "AI SEO 블로그 글 자동 생성기",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
