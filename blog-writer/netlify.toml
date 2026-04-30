@@ -11,4 +11,7 @@
   node_bundler = "esbuild"
 
 [functions."generate"]
-  timeout = 50
+  timeout = 60
+
+[functions."trending"]
+  timeout = 10

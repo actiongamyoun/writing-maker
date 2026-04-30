@@ -1,7 +1,6 @@
 {
   "name": "blog-writer",
   "version": "1.0.0",
-  "description": "AI 블로그 글 자동 생성기",
   "dependencies": {
     "@anthropic-ai/sdk": "^0.24.0"
   }
